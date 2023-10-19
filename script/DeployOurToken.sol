@@ -5,14 +5,13 @@ import {Script} from "forge-std/Script.sol";
 import {OurToken} from "../src/OurToken.sol";
 
 contract DeployOurToken is Script{
-    uint256 public constant INITAL_SUPPLY = 1000 ether;
+    uint256 public constant INITIAL_SUPPLY = 1_000_000 ether;
 
 
     function run() external returns(OurToken){
         vm.startBroadcast();
-        OurToken ot = new OurToken(INITAL_SUPPLY);
+        OurToken ot = new OurToken(INITIAL_SUPPLY);
         vm.stopBroadcast();
         return ot;
     }
-
 }
