@@ -9,6 +9,8 @@ contract testOurToken is Test{
     OurToken public token;
     DeployOurToken public deployer;
 
+    event Transfer(address indexed from,address indexed to,uint256 indexed value);
+
     //Making test addresses
     address bob = makeAddr("bob");
     address alice = makeAddr("alice");
@@ -73,5 +75,10 @@ contract testOurToken is Test{
         assertEq(token.balanceOf(alice),TRANSFER_BALANCE);
         assertEq(token.balanceOf(bob),STARTING_BALANCE-TRANSFER_BALANCE);
     }
-    
+
+    function testFailWhenBeingTransfferedToANullAddress() public {
+        vm.prank(bob);
+        token.transfer(address(0),TRANSFER_BALANCE);
+    }
+
 }
