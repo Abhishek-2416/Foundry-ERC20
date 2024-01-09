@@ -1,21 +1,19 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
-contract ManualToken {
-    mapping(address => uint256) s_balances;
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-    string public name = "Manual Token";
+contract ManualToken is ERC20 {
+    constructor(
+        string memory _name,
+        string memory _symbol
+    ) ERC20(_name, _symbol) {}
 
-    function totalSupply() public view returns (uint256) {
-        return 100 ether;
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
     }
 
-    function balanceOf(address _owner) public view returns (uint256) {
-        return s_balances[_owner];
-    }
-
-    function transfer(address _to, uint256 _amount) public {
-        s_balances[msg.sender] -= _amount;
-        s_balances[_to] += _amount;
+    function burn(address form, uint amount) public virtual {
+        _burn(form, amount);
     }
 }
