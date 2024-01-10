@@ -7,8 +7,9 @@ import {ManualToken} from "../src/ManualToken.sol";
 contract DeployManualToken is Script {
     ManualToken public manualToken;
 
-    function setUp() external returns (ManualToken) {
+    function run() external returns (ManualToken) {
         vm.startBroadcast();
+        manualToken = new ManualToken("Manual Token", "MT");
         vm.stopBroadcast();
         return manualToken;
     }
