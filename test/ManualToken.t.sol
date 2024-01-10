@@ -116,4 +116,46 @@ contract TestManualToken is Test {
     }
 
     //Test all Faliure Test
+
+    //The address cannot be a null address
+    function testWhenMintToZero() external {
+        vm.expectRevert();
+        vm.prank(msg.sender);
+        manualToken.mint(address(0), INITAL_SUPPLY);
+    }
+
+    //The address to burn address cannot be zero
+    function testWhenBurnToZero() external {
+        vm.expectRevert();
+        vm.prank(msg.sender);
+        manualToken.burn(address(0), INITAL_SUPPLY);
+    }
+
+    //Address transfered cannot be zero
+    function testTransferToZeroAddress() external {
+        vm.prank(msg.sender);
+        manualToken.mint(bob, INITAL_SUPPLY);
+
+        vm.prank(bob);
+        vm.expectRevert();
+        manualToken.transfer(address(0), INITAL_SUPPLY);
+    }
+
+    //Address for TransferFrom cannot be zero
+    function testTransferFromToZeroAddress() external {
+        vm.prank(msg.sender);
+        manualToken.mint(bob, INITAL_SUPPLY);
+
+        vm.prank(bob);
+        vm.expectRevert();
+        manualToken.transferFrom(bob, address(0), STARTING_BALANCE);
+    }
+
+    //Fuzz Testing
+
+    function testFuzzMint(address to, uint256 amount) external {
+        vm.assume(to != address(0));
+        manualToken.mint(to, amount);
+        assertEq(manualToken.balanceOf(to), manualToken.totalSupply());
+    }
 }
