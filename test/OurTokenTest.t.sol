@@ -5,31 +5,37 @@ import {Test} from "forge-std/Test.sol";
 import {OurToken} from "../src/OurToken.sol";
 import {DeployOurToken} from "../script/DeployOurToken.s.sol";
 
-contract OurTokenTest is Test {
-    OurToken public token;
-    DeployOurToken public deployer;
+contract TestOurToken is Test {
+    OurToken ourToken;
 
     //addresses
     address bob = makeAddr("bob");
     address alice = makeAddr("alice");
 
-    uint256 public constant STARTING_BALANCE = 100 ether;
+    uint256 constant STARTING_BALANCE = 100 ether;
 
-    function setUp() external {
-        deployer = new DeployOurToken();
-        token = deployer.run();
+    function setUp() public {
+        DeployOurToken deployer = new DeployOurToken();
+        ourToken = deployer.run();
 
-        vm.prank(msg.sender);
-        token.transfer(bob, STARTING_BALANCE);
+        vm.deal(bob, STARTING_BALANCE);
     }
 
-    function testBobBalance() external {
+    function testBobStartingBalance() public view {
         assertEq(address(bob).balance, STARTING_BALANCE);
     }
 
-    // function testTheNameIsCorrect() external {
-    //     string memory actualName = token.name();
-    //     string memory expectedName = "OurToken";
-    //     assertEq(keccak256(abi.encode(actualName)), keccak256(abi.encode(expectedName)));
-    // }
+    function testNameOfToken() public view {
+        string memory actualName = ourToken.name();
+        string memory expectedName = "OurToken";
+
+        assertEq(keccak256(abi.encodePacked(actualName)), keccak256(abi.encodePacked(expectedName)));
+    }
+
+    function testSymbolOfToken() public view {
+        string memory actualSymbol = ourToken.symbol();
+        string memory expectedSymbol = "OT";
+
+        assertEq(keccak256(abi.encodePacked(actualSymbol)), keccak256(abi.encodePacked(expectedSymbol)));
+    }
 }
