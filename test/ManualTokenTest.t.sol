@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/Test.sol";
 import {ManualToken} from "../src/ManualToken.sol";
 import {DeployManualToken} from "../script/DeployManualToken.t.sol";
 
@@ -79,6 +80,12 @@ contract TestManualToken is Test {
         assertEq(manualToken.balanceOf(bob), INITAL_SUPPLY);
     }
 
+    function testTheTransferEventReturnsABoolWhenEverthingIsRight() external {
+        vm.prank(msg.sender);
+        bool success = manualToken.transfer(bob, INITAL_SUPPLY);
+        assertEq(success, true);
+    }
+
     function testTransferEventIsEmittedWhenTransferFunctionCalled() external {
         vm.prank(msg.sender);
         vm.expectEmit();
@@ -86,5 +93,143 @@ contract TestManualToken is Test {
         emit Transfer(msg.sender, bob, INITAL_SUPPLY);
 
         manualToken.transfer(bob, INITAL_SUPPLY);
+    }
+
+    ////////////////
+    // Approve /////
+    ////////////////
+
+    function testTheApproveFunctionRevertsWhenOwnerHasLessBalance() external {
+        vm.expectRevert(ManualToken.ManualToken__InsufficeintBalance.selector);
+        vm.prank(msg.sender);
+        manualToken.approve(bob, 1000000 ether);
+    }
+
+    function testTheApprovedValueCannotBeZero() external {
+        vm.expectRevert(ManualToken.ManualToken__ItShouldBeGreaterThanZero.selector);
+        vm.prank(msg.sender);
+        manualToken.approve(bob, 0 ether);
+    }
+
+    function testTheAllowedDataStructureWillBeUpdated() external {
+        vm.prank(msg.sender);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(msg.sender, bob), INITAL_SUPPLY);
+    }
+
+    function testTheApproveFunctionEmitsAnApproveEvent() external {
+        vm.prank(msg.sender);
+        vm.expectEmit();
+
+        emit Approval(msg.sender, bob, INITAL_SUPPLY);
+
+        manualToken.approve(bob, INITAL_SUPPLY);
+    }
+
+    function testTheApproveFunctionReturnsBoolWhenEverythingIsGood() external {
+        vm.prank(msg.sender);
+        (bool success) = manualToken.approve(bob, INITAL_SUPPLY);
+        assertEq(success, true);
+    }
+
+    //////////////////////
+    // Transfer From /////
+    /////////////////////
+
+    function testTheTransferFromRevertsWhenAmountIsGreaterThanAllowed() external {
+        vm.prank(msg.sender);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        vm.prank(bob);
+        vm.expectRevert(ManualToken.ManualToken__InsufficeintBalance.selector);
+        manualToken.transferFrom(msg.sender, alice, 100000 ether);
+    }
+
+    function testTheTransferFromFunctionRevertsIfTokenOwnerDoesntHaveSufficentBalance() external {
+        vm.prank(msg.sender);
+        manualToken.approve(bob, TOTAL_SUPPLY);
+
+        vm.prank(bob);
+        vm.expectRevert(ManualToken.ManualToken__InsufficeintBalance.selector);
+        manualToken.transferFrom(msg.sender, alice, 100000 ether);
+    }
+
+    function testTheBalanceOfOwnerDecreasesWhenTransferFrom() external {
+        address owner = manualToken.getOwner();
+        console.log(manualToken.balanceOf(owner));
+
+        vm.prank(owner);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), INITAL_SUPPLY);
+
+        vm.prank(bob);
+        manualToken.transferFrom(owner, alice, INITAL_SUPPLY);
+        uint256 remain = TOTAL_SUPPLY - INITAL_SUPPLY;
+
+        assertEq(manualToken.balanceOf(msg.sender), remain);
+    }
+
+    function testTheBalanceOfTheReceiverIncreases() external {
+        address owner = manualToken.getOwner();
+        console.log(manualToken.balanceOf(owner));
+
+        vm.prank(owner);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), INITAL_SUPPLY);
+
+        vm.prank(bob);
+        manualToken.transferFrom(owner, alice, INITAL_SUPPLY);
+
+        assertEq(manualToken.balanceOf(alice), INITAL_SUPPLY);
+    }
+
+    function testTheAllowedBalanceDecresesFromInitalAmount() external {
+        address owner = manualToken.getOwner();
+        console.log(manualToken.balanceOf(owner));
+
+        vm.prank(owner);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), INITAL_SUPPLY);
+
+        vm.prank(bob);
+        manualToken.transferFrom(owner, alice, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), 0);
+    }
+
+    function testTheTransferFromEmitsTransferEvent() external {
+        address owner = manualToken.getOwner();
+        console.log(manualToken.balanceOf(owner));
+
+        vm.prank(owner);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), INITAL_SUPPLY);
+
+        vm.prank(bob);
+        vm.expectEmit();
+
+        emit Transfer(owner, alice, INITAL_SUPPLY);
+
+        manualToken.transferFrom(owner, alice, INITAL_SUPPLY);
+    }
+
+    function testTheTransferFromFunctionReturnsABoolIfEverthingGood() external {
+        address owner = manualToken.getOwner();
+        console.log(manualToken.balanceOf(owner));
+
+        vm.prank(owner);
+        manualToken.approve(bob, INITAL_SUPPLY);
+
+        assertEq(manualToken.allowance(owner, bob), INITAL_SUPPLY);
+
+        vm.prank(bob);
+        (bool success) = manualToken.transferFrom(owner, alice, INITAL_SUPPLY);
+
+        assertEq(success, true);
     }
 }

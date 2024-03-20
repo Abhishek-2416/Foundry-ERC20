@@ -47,7 +47,7 @@ contract ManualToken {
     }
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
-        if (balances[msg.sender] < _value) {
+        if (_value > balances[msg.sender]) {
             revert ManualToken__InsufficeintBalance();
         }
 
@@ -63,7 +63,7 @@ contract ManualToken {
     }
 
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        if (allowed[from][msg.sender] >= amount) {
+        if (allowed[from][msg.sender] < amount) {
             revert ManualToken__InsufficeintBalance();
         }
 
